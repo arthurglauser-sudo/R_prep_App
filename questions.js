@@ -215,7 +215,7 @@ const QUESTIONS = [
     prompt: "The `<<-` operator assigns to a variable in an enclosing or global environment rather than the local one.",
     answer: true,
     explanation: "<<- (super-assignment) writes to a variable in a parent scope, unlike the ordinary <-. Not covered in the course materials.",
-    source: "Bonus — beyond course (super-assignment, not in course materials)" }
+    source: "Bonus — beyond course (super-assignment, not in course materials)" },
 
   // ---------------- PROGRAMMING BASICS ----------------
   { id: "prog-001", topic: "prog", type: "single",
