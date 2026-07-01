@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data Handling in R - Exam Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text"><strong>3,230,1.00</strong> Data Handling in R</span>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-link" data-view="dashboard" aria-current="page">Dashboard</button>
+        <button class="nav-link" data-view="practice">Practice</button>
+        <button class="nav-link" data-view="review">Review</button>
+      </nav>
+      <div class="exam-pill" id="examPill">Exam: 7 Jul</div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!-- DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <div class="hero">
+        <div class="hero-copy">
+          <h1>Your exam prep <span class="accent">HQ</span></h1>
+          <p class="hero-sub" id="heroSub">Structured practice across every topic, with corrections and explanations.</p>
+        </div>
+        <div class="countdown">
+          <span class="countdown-num" id="daysToExam">-</span>
+          <span class="countdown-label">days to exam</span>
+        </div>
+      </div>
+
+      <div class="stat-grid" aria-label="Overall progress">
+        <div class="stat-card"><span class="stat-num" id="statAnswered">0</span><span class="stat-label">Questions answered</span></div>
+        <div class="stat-card"><span class="stat-num" id="statAccuracy">0%</span><span class="stat-label">Accuracy</span></div>
+        <div class="stat-card"><span class="stat-num" id="statTotal">0</span><span class="stat-label">Total questions</span></div>
+      </div>
+
+      <div class="dash-columns">
+        <div class="panel">
+          <h2 class="panel-title">Quick actions</h2>
+          <button class="action action-primary" id="qaRandom">Random practice (all topics)</button>
+          <button class="action" id="qaWrong">Review wrong answers</button>
+          <button class="action action-danger" id="qaReset">Reset all progress</button>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Practice by topic</h2>
+          <div class="topic-list" id="topicList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section class="view" id="view-practice" hidden>
+      <div class="filters" id="practiceFilters" aria-label="Filter by topic"></div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="practiceProgress"></div></div>
+        <span class="progress-count" id="practiceCount">0 / 0</span>
+      </div>
+      <div class="qcard" id="practiceCard" aria-live="polite"></div>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="view" id="view-review" hidden>
+      <h1 class="review-title">Question bank review</h1>
+      <div class="filters" id="reviewFilters" aria-label="Filter by topic"></div>
+      <div id="reviewList"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Local practice tool for course 3,230,1.00. Progress is saved in this browser only.</p>
+  </footer>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
