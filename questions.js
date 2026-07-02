@@ -18,17 +18,12 @@
  * Keep ids unique. Nothing else needs to change; the app reads TOPICS + QUESTIONS.
  *
  * NOTE ON THIS REVISION:
- * - All previously-flagged "bonus" items removed (course-first policy: 8 topics only, no extra section).
- * - Items testing functions/terms with no confirmed occurrence in course materials removed:
- *   tools-031, prog-030 (already bonus), import-024 (col_types), prep-018/019 (semi_join/anti_join),
- *   prep-026 (str_detect), apis-019 (pagination).
- * - Duplicate questions (same concept, reworded) trimmed to one instance each in nonrect, apis, viz.
- * - `source` lecture numbers corrected where evidence showed a different lecture teaches the material
- *   (nonrect HTML/rvest items -> Workshop 3; prep dplyr-verb/join items -> Lecture 8; viz aes/geom_point/
- *   facet_wrap/labs items -> Lecture 9).
- * - viz-012 rewritten to use geom_bar(stat = "identity"), the form actually taught, instead of geom_col().
- * - viz-010 (geom_boxplot) and nonrect-021 (html_elements) kept but flagged: not confirmed in extractable
- *   text, may be on an image slide -- check before relying on them.
+ * - Previously-flagged bonus/out-of-scope items were removed or replaced with course-aligned items.
+ * - Duplicate questions were trimmed in nonrect, apis, and viz.
+ * - `source` lecture numbers were corrected where needed.
+ * - viz-012 uses geom_bar(stat = "identity"), matching the taught form.
+ * - viz-010 and nonrect-019 are flagged because they should be verified against the slides/solutions.
+ * - A runtime patch adds code-interpretation questions and deterministically shuffles answer options.
  */
 
 const TOPICS = [
@@ -1183,3 +1178,316 @@ const QUESTIONS = [
 ];
 
 if (typeof module !== "undefined") module.exports = { TOPICS, QUESTIONS };
+/* PATCH START: option shuffle + flagged-note/data fix + code-interpretation additions */
+(() => {
+  if (typeof QUESTIONS === "undefined" || !Array.isArray(QUESTIONS)) {
+    throw new Error("QUESTIONS array not found. Paste this block after the QUESTIONS declaration.");
+  }
+
+  // Correct flagged-item state.
+  // If your header comment says `nonrect-021`, change that text to `nonrect-019`.
+  for (const q of QUESTIONS) {
+    if (q.id === "nonrect-019" || q.id === "viz-010") q.flagged = true;
+
+    if (q.id === "apis-004") {
+      q.explanation =
+        "APIs automate and target retrieval, but APIs are commonly rate limited, so guaranteed absence of rate limits is false.";
+    }
+  }
+
+  const NEW_CODE_INTERPRETATION_QUESTIONS = [
+    {
+      id: "tools-031",
+      topic: "tools",
+      type: "single",
+      prompt: "Your working directory is `/home/me/project`. Which file does this command try to run?",
+      code: "source(\"code/clean.R\")",
+      options: [
+        "`/home/me/code/clean.R`",
+        "A package called `clean.R` on CRAN",
+        "`/home/me/project/code/clean.R`",
+        "`/code/clean.R`"
+      ],
+      answer: 2,
+      explanation:
+        "A relative path is resolved from the current working directory, so `code/clean.R` means `/home/me/project/code/clean.R`.",
+      source: "Lecture 1, working directory and source()"
+    },
+    {
+      id: "tools-032",
+      topic: "tools",
+      type: "single",
+      prompt: "What is printed by this code?",
+      code: "x <- 1\nX <- 2\nprint(x)",
+      options: ["3", "Error because `x` and `X` conflict", "2", "1"],
+      answer: 3,
+      explanation:
+        "R names are case sensitive. `x` and `X` are different objects, so `print(x)` prints 1.",
+      source: "Lecture 1, naming and output"
+    },
+    {
+      id: "prog-030",
+      topic: "prog",
+      type: "single",
+      prompt: "What does this code return?",
+      code: "x <- c(1, NA, 3)\nsum(is.na(x))",
+      options: ["1", "NA", "3", "0"],
+      answer: 0,
+      explanation:
+        "`is.na(x)` is `FALSE TRUE FALSE`; summing that logical vector counts one missing value.",
+      source: "Lecture 2, missing values and logical vectors"
+    },
+    {
+      id: "prog-031",
+      topic: "prog",
+      type: "single",
+      prompt: "What does this code return?",
+      code: "x <- c(2, 4, 6)\ny <- x > 3\nx[y]",
+      options: ["2 4 6", "TRUE TRUE", "2", "4 6"],
+      answer: 3,
+      explanation:
+        "`x > 3` gives `FALSE TRUE TRUE`, so logical indexing keeps the second and third elements: 4 and 6.",
+      source: "Lecture 2, comparison and indexing"
+    },
+    {
+      id: "storage-020",
+      topic: "storage",
+      type: "single",
+      prompt: "What does this comparison return in R?",
+      code: "0.1 + 0.2 == 0.3",
+      options: ["NA", "TRUE", "Error", "FALSE"],
+      answer: 3,
+      explanation:
+        "Binary floating-point storage cannot represent all decimal fractions exactly, so the computed left side is not exactly equal to 0.3.",
+      source: "Lecture 3, floating point"
+    },
+    {
+      id: "storage-021",
+      topic: "storage",
+      type: "single",
+      prompt: "What does this code return?",
+      code: "x <- c(NA, NaN, Inf)\nis.na(x)",
+      options: ["TRUE TRUE FALSE", "FALSE TRUE TRUE", "TRUE FALSE FALSE", "NA NaN Inf"],
+      answer: 0,
+      explanation:
+        "`NA` and `NaN` are both detected by `is.na()`, while `Inf` is a non-missing infinite value.",
+      source: "Lecture 3, special values"
+    },
+    {
+      id: "import-024",
+      topic: "import",
+      type: "single",
+      prompt: "What does this code return?",
+      code: "df <- data.frame(score = c(\"10\", \"20\"))\nas.numeric(df$score) + 1",
+      options: ["\"10\" \"20\" 1", "10 20 1", "11 21", "NA NA"],
+      answer: 2,
+      explanation:
+        "`df$score` is character text, `as.numeric()` converts it to numbers, and vectorized addition adds 1 to each value.",
+      source: "Lecture 4, data frames and type conversion"
+    },
+    {
+      id: "import-025",
+      topic: "import",
+      type: "single",
+      prompt: "What does this code extract?",
+      code: "df <- data.frame(a = 1:3, b = c(\"x\", \"y\", \"z\"))\ndf[2, \"b\"]",
+      options: ["\"y\"", "2", "\"x\"", "The whole column `b`"],
+      answer: 0,
+      explanation:
+        "Data frame indexing uses `[row, column]`; row 2 of column `b` is `\"y\"`.",
+      source: "Lecture 4, data frame subsetting"
+    },
+    {
+      id: "nonrect-020",
+      topic: "nonrect",
+      type: "single",
+      prompt: "What does this code return?",
+      code: "x <- jsonlite::fromJSON('{\"scores\":[10,20],\"name\":\"Ada\"}')\nx$scores[2]",
+      options: ["A JSON string, not an R value", "10", "\"Ada\"", "20"],
+      answer: 3,
+      explanation:
+        "`fromJSON()` converts the JSON object to R values. The second element of `scores` is 20.",
+      source: "Lecture 5, JSON"
+    },
+    {
+      id: "nonrect-021",
+      topic: "nonrect",
+      type: "single",
+      prompt: "What does this code return conceptually?",
+      code:
+        "doc <- xml2::read_xml(\"<students><student><name>Ana</name></student><student><name>Bo</name></student></students>\")\nxml2::xml_text(xml2::xml_find_all(doc, \".//name\"))",
+      options: ["\"Ana\" \"Bo\"", "The raw XML document unchanged", "\"students\"", "Only \"Ana\""],
+      answer: 0,
+      explanation:
+        "The XPath `.//name` selects all `<name>` nodes at any depth, and `xml_text()` extracts their text.",
+      source: "Lecture 5, XML / XPath"
+    },
+    {
+      id: "apis-017",
+      topic: "apis",
+      type: "single",
+      prompt: "What is the best interpretation of this httr2 code?",
+      code:
+        "req <- httr2::request(\"https://api.example.com/data\") |>\n  httr2::req_url_query(country = \"CH\")",
+      options: [
+        "It sends the request and parses the JSON response",
+        "It checks whether the response status is 200",
+        "It stores an API key in the URL",
+        "It builds a request with query parameter `country=CH`, but does not send it yet"
+      ],
+      answer: 3,
+      explanation:
+        "`request()` and `req_url_query()` build the request object. The request is not sent until `req_perform()` is called.",
+      source: "Guest lecture, httr2"
+    },
+    {
+      id: "apis-018",
+      topic: "apis",
+      type: "single",
+      prompt: "Suppose this code returns `404`. What does that mean?",
+      code: "resp <- httr2::req_perform(req)\nhttr2::resp_status(resp)",
+      options: [
+        "The client is being rate limited",
+        "The server returned JSON successfully",
+        "The request succeeded",
+        "The requested resource was not found"
+      ],
+      answer: 3,
+      explanation:
+        "HTTP 404 means the requested resource was not found. A successful request would normally be 200.",
+      source: "Guest lecture, HTTP status"
+    },
+    {
+      id: "prep-024",
+      topic: "prep",
+      type: "single",
+      prompt: "What does this pipeline produce conceptually?",
+      code:
+        "df <- data.frame(g = c(\"A\", \"A\", \"B\"), x = c(1, 3, 10))\ndf |>\n  dplyr::group_by(g) |>\n  dplyr::summarise(avg = mean(x))",
+      options: [
+        "Three rows: one average per original row",
+        "One row: avg is 14",
+        "Two rows: A has avg 2, B has avg 10",
+        "An error because `mean()` cannot be used in `summarise()`"
+      ],
+      answer: 2,
+      explanation:
+        "`group_by(g)` creates groups A and B. `summarise()` returns one row per group: A = mean(1, 3) = 2 and B = 10.",
+      source: "Lecture 8, group_by() and summarise()"
+    },
+    {
+      id: "prep-025",
+      topic: "prep",
+      type: "single",
+      prompt: "What does this join return conceptually?",
+      code:
+        "dplyr::left_join(\n  data.frame(id = c(1, 2), x = c(\"a\", \"b\")),\n  data.frame(id = c(2, 3), y = c(\"Y2\", \"Y3\")),\n  by = \"id\"\n)",
+      options: [
+        "Two rows: id 1 has `y = NA`; id 2 has `y = \"Y2\"`",
+        "Three rows: ids 1, 2, and 3 are all kept",
+        "One row: only id 2 is kept",
+        "Zero rows because the tables are different sizes"
+      ],
+      answer: 0,
+      explanation:
+        "A left join keeps all rows from the left table. id 1 has no match, so right-hand columns are `NA`; id 2 matches `Y2`.",
+      source: "Lecture 8, joins"
+    },
+    {
+      id: "viz-022",
+      topic: "viz",
+      type: "single",
+      prompt: "In this plot, what varies according to `sex`?",
+      code:
+        "ggplot2::ggplot(df, ggplot2::aes(x = height, y = weight, colour = sex)) +\n  ggplot2::geom_point()",
+      options: ["The y-axis variable", "Point colour", "The x-axis variable", "The facet layout"],
+      answer: 1,
+      explanation:
+        "`colour = sex` is inside `aes()`, so point colour is mapped to the variable `sex`.",
+      source: "Lecture 9, ggplot2 aesthetics"
+    },
+    {
+      id: "viz-023",
+      topic: "viz",
+      type: "single",
+      prompt: "What do the bar heights represent in this plot?",
+      code:
+        "ggplot2::ggplot(df, ggplot2::aes(x = group, y = value)) +\n  ggplot2::geom_bar(stat = \"identity\")",
+      options: ["A fitted linear model", "Counts of rows in each `group`", "Missing values only", "The supplied `value` column"],
+      answer: 3,
+      explanation:
+        "`geom_bar(stat = \"identity\")` uses the supplied y-values instead of counting rows.",
+      source: "Lecture 10, geoms"
+    }
+  ];
+
+  const existingIds = new Set(QUESTIONS.map((q) => q.id));
+  for (const q of NEW_CODE_INTERPRETATION_QUESTIONS) {
+    if (!existingIds.has(q.id)) {
+      QUESTIONS.push(q);
+      existingIds.add(q.id);
+    }
+  }
+
+  function hash32(text) {
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i += 1) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function rng(seed) {
+    return function next() {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = seed;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function deterministicShuffle(pairs, seedText) {
+    const out = pairs.slice();
+    const random = rng(hash32(seedText));
+
+    for (let i = out.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+
+    return out;
+  }
+
+  function remapAnswer(q, shuffledPairs) {
+    if (Array.isArray(q.answer)) {
+      const oldCorrect = new Set(q.answer);
+
+      return shuffledPairs
+        .map((pair, newIndex) => (oldCorrect.has(pair.oldIndex) ? newIndex : null))
+        .filter((index) => index !== null)
+        .sort((a, b) => a - b);
+    }
+
+    return shuffledPairs.findIndex((pair) => pair.oldIndex === q.answer);
+  }
+
+  for (const q of QUESTIONS) {
+    if (!Array.isArray(q.options) || q.__optionsShuffled === true) continue;
+    if (!(q.type === "single" || q.type === "multi")) continue;
+
+    const pairs = q.options.map((text, oldIndex) => ({ text, oldIndex }));
+    const shuffled = deterministicShuffle(pairs, `${q.id}|${q.topic}|${q.type}`);
+
+    q.options = shuffled.map((pair) => pair.text);
+    q.answer = remapAnswer(q, shuffled);
+
+    Object.defineProperty(q, "__optionsShuffled", {
+      value: true,
+      enumerable: false,
+      configurable: false
+    });
+  }
+})();
+/* PATCH END */
