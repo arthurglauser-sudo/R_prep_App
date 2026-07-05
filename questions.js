@@ -29,7 +29,7 @@ const TOPICS = [
   { key: "viz",        name: "EDA & Visualisation",        blurb: "EDA, missing values, ggplot2" },
   { key: "eda",        name: "EDA Concepts & Aesthetics",  blurb: "EDA process, variation/covariation, aes(), layering" },
   { key: "vizdesign",  name: "Visualization Design & Polish", blurb: "position, coords, scales, themes, Tufte, colour" },
-  { key: "mockexam", name: "Mock Exam", blurb: "40 questions from the practice exam" },
+  { key: "mockexam",   name: "Mock Exam",                  blurb: "40 questions from the practice exam" },
 ];
 
 const QUESTIONS = [
