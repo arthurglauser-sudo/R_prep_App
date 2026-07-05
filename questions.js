@@ -29,6 +29,7 @@ const TOPICS = [
   { key: "viz",        name: "EDA & Visualisation",        blurb: "EDA, missing values, ggplot2" },
   { key: "eda",        name: "EDA Concepts & Aesthetics",  blurb: "EDA process, variation/covariation, aes(), layering" },
   { key: "vizdesign",  name: "Visualization Design & Polish", blurb: "position, coords, scales, themes, Tufte, colour" },
+  { key: "mockexam", name: "Mock Exam", blurb: "40 questions from the practice exam" },
 ];
 
 const QUESTIONS = [
@@ -1495,6 +1496,314 @@ const QUESTIONS = [
     answer: 0,
     explanation: "coord_flip() flips the axes, commonly used to make bar labels readable when there are many long category names. Not confirmed in the extractable course text -- verify before relying on this one.",
     source: "Lecture 10, coordinate systems (unconfirmed -- check slides)" },
+
+  // ---------------- Mock Exam ----------------
+
+{ id: "mock-001", topic: "mockexam", type: "tf",
+    prompt: "The 'rbind' function in R can be used with data frames that have different column names.",
+    answer: false,
+    explanation: "rbind() requires matching column names (and count) across the data frames being stacked; mismatched names throw an error.",
+    source: "Mock Exam, Q1" },
+ 
+  { id: "mock-002", topic: "mockexam", type: "tf",
+    prompt: "If you have a JSON file, you first have to convert it to a csv format in order to open it in R.",
+    answer: false,
+    explanation: "jsonlite::fromJSON() reads JSON directly into R; no conversion to CSV is needed.",
+    source: "Mock Exam, Q2" },
+ 
+  { id: "mock-003", topic: "mockexam", type: "tf",
+    prompt: "Assume you run lines of R code that build a data frame and then call `mode(df$Country)`. The code returns 'England' as an output.",
+    answer: false,
+    explanation: "mode() reports the storage mode of the vector (e.g. \"character\"), not one of its values, so it cannot return \"England\".",
+    source: "Mock Exam, Q3" },
+ 
+  { id: "mock-004", topic: "mockexam", type: "tf",
+    prompt: "Categorical variables are best stored as factors.",
+    answer: true,
+    explanation: "Factors encode a fixed set of categories with levels, which is the intended representation for categorical data in R.",
+    source: "Mock Exam, Q4" },
+ 
+  { id: "mock-005", topic: "mockexam", type: "tf",
+    prompt: "Assume you run a line of R code that merges two data frames by the column 'dept_id'. The merged dataset will not contain the variable 'dept_id'.",
+    answer: false,
+    explanation: "merge() by a shared key keeps that key column in the result; it does not drop it.",
+    source: "Mock Exam, Q5" },
+ 
+  { id: "mock-006", topic: "mockexam", type: "tf",
+    prompt: "To merge two datasets in R you have to open two different sessions with one dataset opened in each session.",
+    answer: false,
+    explanation: "Both data frames just need to be loaded as objects in the same R session; merge()/joins operate within one session.",
+    source: "Mock Exam, Q6" },
+ 
+  { id: "mock-007", topic: "mockexam", type: "tf",
+    prompt: "If you use 'Inner Join' to merge two datasets, only complete observations are kept in the resulting new data frame.",
+    answer: true,
+    explanation: "An inner join keeps only rows with a matching key in both tables, i.e. the complete/matching cases.",
+    source: "Mock Exam, Q7" },
+ 
+  { id: "mock-008", topic: "mockexam", type: "tf",
+    prompt: "If you use 'Outer Join' to merge two datasets, all observations are kept in the resulting new data frame, and missing values are indicated with 'NA'.",
+    answer: true,
+    explanation: "A full outer join keeps every row from both tables, filling non-matches with NA.",
+    source: "Mock Exam, Q8" },
+ 
+  { id: "mock-009", topic: "mockexam", type: "tf",
+    prompt: "Plots produced using 'ggplot2' always have a grey background.",
+    answer: false,
+    explanation: "Grey is only the default theme_grey() background; themes like theme_minimal() or theme_bw() change it.",
+    source: "Mock Exam, Q9" },
+ 
+  { id: "mock-010", topic: "mockexam", type: "tf",
+    prompt: "If you have a data frame 'data' loaded in R, in order to create a plot using 'ggplot2' you need to create a new data frame called 'data_to_plot'.",
+    answer: false,
+    explanation: "ggplot() can plot directly from any existing data frame; no renamed copy is required.",
+    source: "Mock Exam, Q10" },
+ 
+  { id: "mock-011", topic: "mockexam", type: "tf",
+    prompt: "Consider a line of code that assigns a value to an index beyond a vector's current length. This will produce an error because R cannot add a single number to a vector.",
+    answer: false,
+    explanation: "R silently extends the vector, filling the gap with NA, rather than throwing an error.",
+    source: "Mock Exam, Q11" },
+ 
+  { id: "mock-012", topic: "mockexam", type: "tf",
+    prompt: "Information takes the form of 0s and 1s when it is processed by a computer.",
+    answer: true,
+    explanation: "All data is ultimately represented and processed as binary digits at the hardware level.",
+    source: "Mock Exam, Q12" },
+ 
+  { id: "mock-013", topic: "mockexam", type: "tf",
+    prompt: "Given a data frame with columns x, y, z, running `names(myvals)` will get \"x\" \"y\" \"z\" as an output.",
+    answer: true,
+    explanation: "names() on a data frame returns its column names in order.",
+    source: "Mock Exam, Q13" },
+ 
+  { id: "mock-014", topic: "mockexam", type: "tf",
+    prompt: "Given `myvector <- factor(c('Cat','Dog','Cat','Sparrow'))`, running `levels(myvector)` will get \"Cat\" \"Dog\" \"Cat\" \"Sparrow\" as an output.",
+    answer: false,
+    explanation: "levels() returns the unique category labels only, sorted, so it would give \"Cat\" \"Dog\" \"Sparrow\" without the duplicate.",
+    source: "Mock Exam, Q14" },
+ 
+  { id: "mock-015", topic: "mockexam", type: "tf",
+    prompt: "A feature of data frames in R is that variables can only be accessed by their name, e.g. df$myvariable or df[,'myvariable'].",
+    answer: false,
+    explanation: "Columns can also be accessed by position, e.g. df[,1] or df[[1]], so name is not the only way.",
+    source: "Mock Exam, Q15" },
+ 
+  { id: "mock-016", topic: "mockexam", type: "tf",
+    prompt: "Given a function `square_number <- function(x) return(x^2)`, it will return the squared value of the input, e.g. square_number(3) returns 9.",
+    answer: true,
+    explanation: "x^2 with x = 3 evaluates to 9.",
+    source: "Mock Exam, Q16" },
+ 
+  { id: "mock-017", topic: "mockexam", type: "tf",
+    prompt: "`sqrt('16','2')` will return an error.",
+    answer: true,
+    explanation: "sqrt() takes one numeric argument; passing two character strings does not match its signature and errors.",
+    source: "Mock Exam, Q17" },
+ 
+  { id: "mock-018", topic: "mockexam", type: "tf",
+    prompt: "The statement `source('myscript.R')` will read and evaluate the code contained in 'myscript.R'.",
+    answer: true,
+    explanation: "source() runs an R script file's contents in the current session.",
+    source: "Mock Exam, Q18" },
+ 
+  { id: "mock-019", topic: "mockexam", type: "tf",
+    prompt: "`sqrt(12345)` will return 3.",
+    answer: false,
+    explanation: "The square root of 12345 is approximately 111.1, not 3.",
+    source: "Mock Exam, Q19" },
+ 
+  { id: "mock-020", topic: "mockexam", type: "tf",
+    prompt: "`as.numeric(myvector)` defines the variable myvector as a string.",
+    answer: false,
+    explanation: "as.numeric() converts to a numeric type; it does not produce or define a string.",
+    source: "Mock Exam, Q20" },
+ 
+  { id: "mock-021", topic: "mockexam", type: "tf",
+    prompt: "When implementing a for loop, it is generally relevant to carefully define a proper stopping criterion in order to avoid the loop going on forever.",
+    answer: true,
+    explanation: "A well-defined stopping condition prevents infinite or runaway loops.",
+    source: "Mock Exam, Q21" },
+ 
+  { id: "mock-022", topic: "mockexam", type: "tf",
+    prompt: "In R, all columns of a matrix must have the same length.",
+    answer: true,
+    explanation: "A matrix is a single rectangular structure with one type, so every column has the same number of elements.",
+    source: "Mock Exam, Q22" },
+ 
+  { id: "mock-023", topic: "mockexam", type: "tf",
+    prompt: "Check the following code: a SuperMarket list is built from name and Profit vectors, then split by Firm. 'SuperMarket' is a list with 3 elements.",
+    answer: true,
+    explanation: "Splitting by a grouping variable with 3 distinct values produces a list of 3 elements, one per group.",
+    source: "Mock Exam, Q23" },
+ 
+  { id: "mock-024", topic: "mockexam", type: "tf", flagged: true,
+    prompt: "Check the following code (exact statement not fully legible from source screenshots). Assume the code returns 2 3.",
+    answer: true,
+    explanation: "Marked true per the exam's own answer key. The exact code could not be reliably transcribed from any screenshot version provided; verify directly in Canvas before relying on this one.",
+    source: "Mock Exam, Q24 (unconfirmed -- check Canvas directly)" },
+ 
+  { id: "mock-025", topic: "mockexam", type: "tf",
+    prompt: "The hexadecimal equivalent of the base 10 number 20 is '14'.",
+    answer: true,
+    explanation: "20 = (1 x 16) + 4, so its hex digits are 1 and 4, i.e. \"14\".",
+    source: "Mock Exam, Q25" },
+ 
+  { id: "mock-026", topic: "mockexam", type: "multi",
+    prompt: "Select the statements that are true about quantitative text analysis.",
+    options: [
+      "A corpus is a collection of authentic text organized into datasets.",
+      "'Stopwords' are words that are filtered out before or after processing of natural language data because they are insignificant.",
+      "'Tokens' are elements extracted from a corpus. Tokens can be single words or whole sentences.",
+      "Tokens are turned into a matrix called a 'document-term-matrix' (dtm). These matrices contain the count frequency, or sometimes an indicator for whether a token appears in a document."
+    ],
+    answer: [0, 1, 2, 3],
+    explanation: "All four statements are standard definitions in basic text analysis: corpus, stopwords, tokens, and the document-term-matrix.",
+    source: "Mock Exam, Q26" },
+ 
+  { id: "mock-027", topic: "mockexam", type: "multi",
+    prompt: "You want to visualize the relationship between x and y with a scatterplot in R based on a data frame called 'mydata'. Select the statements that are true.",
+    options: [
+      "If you want to use 'ggplot' you first need to load the package 'ggplot2'.",
+      "To create a plot with ggplot2, you first need to create a new data frame called 'mydata_biplot'.",
+      "It's not possible to produce a scatterplot in R.",
+      "It's not possible to produce a scatterplot using the function 'plot'."
+    ],
+    answer: [0],
+    explanation: "You do need library(ggplot2) loaded first. The other three are false: no renamed copy is needed, scatterplots are possible in R, and base plot() can also produce one.",
+    source: "Mock Exam, Q27" },
+ 
+  { id: "mock-028", topic: "mockexam", type: "multi", flagged: true,
+    prompt: "You look at the structure of your data frame 'df' and R reports: 'data.frame': 3 obs. of 2 variables: $ V1: int 1 2 9, $ V3: chr \"a\" \"b\" \"3\". Select the statements that are true.",
+    options: [
+      "df is badly formatted because it contains variables of different classes",
+      "sum(df$V3, na.rm = TRUE) will return 3",
+      "nrow(df) is equal to 3",
+      "mean(df$V1) will produce an error because V1 is not numeric"
+    ],
+    answer: [2],
+    explanation: "nrow(df) is 3 (matches the reported 3 obs). Having mixed column classes is normal, not \"badly formatted\". sum() on a character column errors rather than returning 3. V1 is int (numeric), so mean(df$V1) works fine, no error. The full option wording was not fully legible across screenshots; verify directly in Canvas.",
+    source: "Mock Exam, Q28 (partially unconfirmed -- check Canvas directly)" },
+ 
+  { id: "mock-029", topic: "mockexam", type: "multi",
+    prompt: "Consider: my_function <- function(x, y = 5) { if (x > y) { warning(\"x is greater than y\") }; d <- floor(y / x); result <- c(d, y - d*x); return(result) }. floor() rounds down to the nearest integer. Select statements that are true.",
+    options: [
+      "This function does not return a result if x > y",
+      "The function always returns a vector c(0, y) if x > y",
+      "my_function(5) does not produce an error",
+      "my_function(4, 9) returns the vector c(2, 1)"
+    ],
+    answer: [2, 3],
+    explanation: "A warning does not stop execution, so the function still returns a result even when x > y, and the \"always c(0,y)\" claim breaks for negative y (e.g. x=3,y=-1 gives c(-1,2), not c(0,-1)). my_function(5): x=y=5, no warning, d=floor(1)=1, result=c(1,0), no error. my_function(4,9): d=floor(9/4)=2, result=c(2, 9-8)=c(2,1).",
+    source: "Mock Exam, Q29" },
+ 
+  { id: "mock-030", topic: "mockexam", type: "multi",
+    prompt: "When writing your R script:",
+    options: [
+      "you should write it as if you were explaining each step to your future self",
+      "you should load packages at the beginning of the script",
+      "you should comment each important step in your code",
+      "you should write overly complicated code, because the more confusing it is, the more you look like a genius"
+    ],
+    answer: [0, 1, 2],
+    explanation: "Good practice: write for future-you, load packages up front, and comment key steps. Deliberately obscure code is bad practice, not a goal.",
+    source: "Mock Exam, Q30" },
+ 
+  { id: "mock-031", topic: "mockexam", type: "single",
+    prompt: "Assume: df <- data.frame(Year = c(2005, 2005, 2007), Month = c(1, 2, 3)); df$Year <- ifelse(df$Year == 2005, 2015, df$Year). This will produce a data frame with the same values as (mark one as correct):",
+    options: [
+      "df <- data.frame(Year = c(2015, 2015, 2007), Month = c(2015, 2015, 2015))",
+      "df <- data.frame(Year = c(2015, 2015, 2007), Month = c(1, 2, 3))",
+      "df <- data.frame(Year = c(2005, 2005, 2007), Month = c(2005, 2005, 2005))",
+      "df <- data.frame(Year = c(2005, 2005, 2007), Month = c(1, 2, 3))"
+    ],
+    answer: 1,
+    explanation: "ifelse() replaces Year values equal to 2005 with 2015, leaving 2007 and the Month column untouched.",
+    source: "Mock Exam, Q31" },
+ 
+  { id: "mock-032", topic: "mockexam", type: "single",
+    prompt: "You have a json file 'company.json' with a company containing departments (Development: 120, Marketing: 45, Sales: 50) and a founded year. You import it with jsonlite::fromJSON. Which of the following is true?",
+    options: [
+      "mean(json_data$company$departments$employees) returns the average number of employees",
+      "json_data$company returns a list with 1 element",
+      "json_data[[1]][[2]] contains only one string element",
+      "json_data is stored as a json object in R"
+    ],
+    answer: 0,
+    explanation: "departments parses into a data frame with an employees column of c(120, 45, 50); mean() of that vector correctly returns the average. json_data$company has 3 elements (name, departments, founded), not 1; json_data[[1]][[2]] resolves to the departments table, not a single string; fromJSON() returns a plain R list/data frame, not a special json-class object.",
+    source: "Mock Exam, Q32" },
+ 
+  { id: "mock-033", topic: "mockexam", type: "single",
+    prompt: "Assume you have a data frame 'df' in 'long' format. What is the function to convert 'df' to a 'wide' format?",
+    options: ["to_longer", "pivot_longer", "pivot_wider", "to_wider"],
+    answer: 2,
+    explanation: "pivot_wider() converts long format to wide; pivot_longer() does the reverse. \"to_longer\"/\"to_wider\" are not real tidyr functions.",
+    source: "Mock Exam, Q33" },
+ 
+  { id: "mock-034", topic: "mockexam", type: "single",
+    prompt: "string <- \"dante Alighieri\"; the code chain ends by computing trimws(tolower(string)). What does the execution return?",
+    options: ["DANTEALIGHIERI", "dantealighieri", "dante alighieri", "DANTE ALIGHIERI"],
+    answer: 2,
+    explanation: "tolower() lowercases the whole string to \"dante alighieri\"; trimws() only trims leading/trailing whitespace, so the internal space stays, giving \"dante alighieri\".",
+    source: "Mock Exam, Q34" },
+ 
+  { id: "mock-035", topic: "mockexam", type: "single",
+    prompt: "What decimal number does the binary sequence 101010 correspond to?",
+    options: ["30", "84", "42", "111"],
+    answer: 2,
+    explanation: "101010 = 32 + 8 + 2 = 42.",
+    source: "Mock Exam, Q35" },
+ 
+  { id: "mock-036", topic: "mockexam", type: "single",
+    prompt: "Which code statement may have caused the error \"invalid 'type' (character) of argument\"?",
+    options: [
+      "both sum(c(\"1\",\"2\",\"3\",\"4\")) and sum(c(0, NA, 1, 2))",
+      "sum(c(1, 2, 3, 4))",
+      "sum(c(0, NA, 1, 2))",
+      "sum(c(\"1\", \"2\", \"3\", \"4\"))"
+    ],
+    answer: 3,
+    explanation: "sum() on a character vector triggers exactly this error. sum(c(0, NA, 1, 2)) is valid (returns NA unless na.rm = TRUE is added), so it is not the cause.",
+    source: "Mock Exam, Q36" },
+ 
+  { id: "mock-037", topic: "mockexam", type: "single",
+    prompt: "Consider: x <- c(1, 2, 3, \"Four\", \"Five\"); class(x). What is the console output when we run it?",
+    options: ["\"list\"", "\"character\"", "\"data.frame\"", "\"numeric\""],
+    answer: 1,
+    explanation: "c() coerces all elements to the most flexible common type present; mixing numbers with strings makes the whole vector character.",
+    source: "Mock Exam, Q37" },
+ 
+  { id: "mock-038", topic: "mockexam", type: "single", flagged: true,
+    prompt: "A data frame is built and then modified (grades halved, a constant city column and an ID column added). Which of the following statements about the resulting dimensions is true?",
+    options: ["dim(df) == c(6, 3)", "dim(df) == c(6, 4)", "dim(df) == c(4, 4)", "dim(df) == c(4, 3)"],
+    answer: 1,
+    explanation: "Best derivation from partial screenshots: adding city and ID as new columns to a 6-row frame gives 6 rows and 4 columns. The original code's exact vector lengths were never fully legible across any screenshot version; verify directly in Canvas before trusting this one.",
+    source: "Mock Exam, Q38 (unconfirmed -- check Canvas directly)" },
+ 
+  { id: "mock-039", topic: "mockexam", type: "single",
+    prompt: "What does executing `mydf$month[mydf$month == 'Feb'] <- 'Februar'` change in the data frame 'mydf'?",
+    options: [
+      "Nothing changes",
+      "All values in column month equal to 'Feb' are replaced with the value 'Februar'",
+      "A new column called Februar is added to the data frame",
+      "All values in the data frame equal to 'Feb' are replaced with the value 'Februar', across every column"
+    ],
+    answer: 1,
+    explanation: "Logical indexing on mydf$month restricts the replacement to that column, only where the value equals 'Feb'; other columns and non-matching rows are untouched.",
+    source: "Mock Exam, Q39" },
+ 
+  { id: "mock-040", topic: "mockexam", type: "single",
+    prompt: "You have a students dataset (ID, Name, Birthday, Gender, Starting year, Canton) and a second long-format dataset of exam grades per student (a row per exam taken; omitted if not taken). You want grade differences by gender, and a drop-out rate per gender (untaken exams / total official exams). What do you do?",
+    options: [
+      "I use a cbind function",
+      "I join the two datasets using a left join (with the first dataset being left)",
+      "I join the two datasets using an inner join",
+      "I join the datasets using a right join (with the first dataset being left)"
+    ],
+    answer: 1,
+    explanation: "A left join keeps every student from the master roster even if they have no exam rows, which is required to compute a drop-out rate; an inner join would silently drop students who took zero exams, and cbind() doesn't align rows by key at all.",
+    source: "Mock Exam, Q40" }
+  
 ];
 
 if (typeof module !== "undefined") module.exports = { TOPICS, QUESTIONS };
