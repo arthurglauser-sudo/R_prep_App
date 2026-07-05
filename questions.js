@@ -1,40 +1,34 @@
 /*
  * QUESTION BANK  -  Data Handling in R (course 3,230,1.00)
  * ---------------------------------------------------------
- * Each question is one object. Schema:
+ * Schema: see previous revisions. `flagged: true` = unresolved / not confirmed
+ * against the extractable course text -> verify against slides before relying on it.
  *
- *   id          unique string, "<topicKey>-NNN"          (e.g. "prog-007")
- *   topic       one of the TOPIC keys defined in TOPICS below
- *   type        "tf" | "single" | "multi"
- *   prompt      the question text. Wrap inline code in backticks `like this`
- *   code        OPTIONAL multi-line code block shown in a monospace box
- *   options     array of strings. OMIT for "tf" (True/False is implied)
- *   answer      tf -> true/false | single -> option index | multi -> array of indices
- *   explanation short correction shown after answering
- *   source      where it comes from, for your own verification (hidden from stats)
- *   flagged     OPTIONAL true if unresolved / not confirmed in course materials -> verify this one first
- *
- * To add questions with Claude Code, just append objects to QUESTIONS.
- * Keep ids unique. Nothing else needs to change; the app reads TOPICS + QUESTIONS.
- *
- * NOTE ON THIS REVISION:
- * - Previously-flagged bonus/out-of-scope items were removed or replaced with course-aligned items.
- * - Duplicate questions were trimmed in nonrect, apis, and viz.
- * - `source` lecture numbers were corrected where needed.
- * - viz-012 uses geom_bar(stat = "identity"), matching the taught form.
- * - viz-010 and nonrect-019 are flagged because they should be verified against the slides/solutions.
- * - A runtime patch adds code-interpretation questions and deterministically shuffles answer options.
+ * NOTE ON THIS REVISION (v3):
+ * - Base = the 8-topic file + the 16 "code-interpretation" questions appended by the
+ *   runtime patch in the prior revision, now merged directly into QUESTIONS (no ID clash).
+ * - Cut 3 duplicates found inside that 16-question patch:
+ *     storage-020 (dup of storage-004 / storage-014, same floating-point fact),
+ *     nonrect-021 (dup of nonrect-002, same XPath fact).
+ *   storage-021, nonrect-020, viz-022, viz-023 (patch versions) are kept, they are not duplicates.
+ * - Added 2 NEW topics, split from the Lecture 9/10 batch by which lecture the evidence
+ *   supports, not by feel:
+ *     eda        - EDA process, variation/covariation, core aes()/grammar, layering, NA handling (Lecture 9)
+ *     vizdesign  - position adjustments, coords, scales, themes, saving, Tufte, colour (Lecture 10)
+ * - The deterministic option-shuffle patch is preserved as-is (I did not write it; verify separately).
  */
 
 const TOPICS = [
-  { key: "tools",   name: "Tools & Setup",            blurb: "R, RStudio, paths, help" },
-  { key: "prog",    name: "Programming Basics",       blurb: "vectors, operators, loops, functions" },
-  { key: "storage", name: "Data Storage & Encoding",  blurb: "binary, hex, floats, encoding" },
-  { key: "import",  name: "Import & Rectangular Data", blurb: "readr, types, data frames, factors" },
-  { key: "nonrect", name: "Non-Rectangular Data",      blurb: "XML, JSON, HTML, scraping" },
-  { key: "apis",    name: "APIs",                      blurb: "httr2, requests, responses" },
-  { key: "prep",    name: "Data Preparation",          blurb: "tidy, reshape, joins, dplyr" },
-  { key: "viz",     name: "EDA & Visualisation",       blurb: "EDA, missing values, ggplot2" },
+  { key: "tools",     name: "Tools & Setup",              blurb: "R, RStudio, paths, help" },
+  { key: "prog",       name: "Programming Basics",         blurb: "vectors, operators, loops, functions" },
+  { key: "storage",    name: "Data Storage & Encoding",    blurb: "binary, hex, floats, encoding" },
+  { key: "import",     name: "Import & Rectangular Data",  blurb: "readr, types, data frames, factors" },
+  { key: "nonrect",    name: "Non-Rectangular Data",       blurb: "XML, JSON, HTML, scraping" },
+  { key: "apis",       name: "APIs",                       blurb: "httr2, requests, responses" },
+  { key: "prep",       name: "Data Preparation",           blurb: "tidy, reshape, joins, dplyr" },
+  { key: "viz",        name: "EDA & Visualisation",        blurb: "EDA, missing values, ggplot2" },
+  { key: "eda",        name: "EDA Concepts & Aesthetics",  blurb: "EDA process, variation/covariation, aes(), layering" },
+  { key: "vizdesign",  name: "Visualization Design & Polish", blurb: "position, coords, scales, themes, Tufte, colour" },
 ];
 
 const QUESTIONS = [
@@ -219,6 +213,25 @@ const QUESTIONS = [
     answer: 0,
     explanation: "Objects you create at the top level live in the global environment (R_GlobalEnv), which the Environment pane displays. Objects created inside a function live in that function's own environment, not the global one.",
     source: "Lecture 2, environment" },
+  { id: "tools-031", topic: "tools", type: "single",
+    prompt: "Your working directory is `/home/me/project`. Which file does this command try to run?",
+    code: "source(\"code/clean.R\")",
+    options: [
+      "`/home/me/code/clean.R`",
+      "A package called `clean.R` on CRAN",
+      "`/home/me/project/code/clean.R`",
+      "`/code/clean.R`"
+    ],
+    answer: 2,
+    explanation: "A relative path is resolved from the current working directory, so `code/clean.R` means `/home/me/project/code/clean.R`.",
+    source: "Lecture 1, working directory and source()" },
+  { id: "tools-032", topic: "tools", type: "single",
+    prompt: "What is printed by this code?",
+    code: "x <- 1\nX <- 2\nprint(x)",
+    options: ["3", "Error because `x` and `X` conflict", "2", "1"],
+    answer: 3,
+    explanation: "R names are case sensitive. `x` and `X` are different objects, so `print(x)` prints 1.",
+    source: "Lecture 1, naming and output" },
 
   // ---------------- PROGRAMMING BASICS ----------------
   { id: "prog-001", topic: "prog", type: "single",
@@ -413,6 +426,20 @@ const QUESTIONS = [
     answer: 0,
     explanation: "abs() gives the absolute value, here 7.",
     source: "Lecture 2, functions" },
+  { id: "prog-030", topic: "prog", type: "single",
+    prompt: "What does this code return?",
+    code: "x <- c(1, NA, 3)\nsum(is.na(x))",
+    options: ["1", "NA", "3", "0"],
+    answer: 0,
+    explanation: "`is.na(x)` is `FALSE TRUE FALSE`; summing that logical vector counts one missing value.",
+    source: "Lecture 2, missing values and logical vectors" },
+  { id: "prog-031", topic: "prog", type: "single",
+    prompt: "What does this code return?",
+    code: "x <- c(2, 4, 6)\ny <- x > 3\nx[y]",
+    options: ["2 4 6", "TRUE TRUE", "2", "4 6"],
+    answer: 3,
+    explanation: "`x > 3` gives `FALSE TRUE TRUE`, so logical indexing keeps the second and third elements: 4 and 6.",
+    source: "Lecture 2, comparison and indexing" },
 
   // ---------------- DATA STORAGE & ENCODING ----------------
   { id: "storage-001", topic: "storage", type: "single",
@@ -525,6 +552,13 @@ const QUESTIONS = [
     answer: 0,
     explanation: "Binary is base 2.",
     source: "Lecture 3, number systems" },
+  { id: "storage-021", topic: "storage", type: "single",
+    prompt: "What does this code return?",
+    code: "x <- c(NA, NaN, Inf)\nis.na(x)",
+    options: ["TRUE TRUE FALSE", "FALSE TRUE TRUE", "TRUE FALSE FALSE", "NA NaN Inf"],
+    answer: 0,
+    explanation: "`NA` and `NaN` are both detected by `is.na()`, while `Inf` is a non-missing infinite value.",
+    source: "Lecture 3, special values" },
 
   // ---------------- IMPORT & RECTANGULAR DATA ----------------
   { id: "import-001", topic: "import", type: "single",
@@ -676,6 +710,20 @@ const QUESTIONS = [
     answer: true,
     explanation: "Unless you specify levels, factor() orders them alphabetically.",
     source: "Lecture 4, factors" },
+  { id: "import-024", topic: "import", type: "single",
+    prompt: "What does this code return?",
+    code: "df <- data.frame(score = c(\"10\", \"20\"))\nas.numeric(df$score) + 1",
+    options: ["\"10\" \"20\" 1", "10 20 1", "11 21", "NA NA"],
+    answer: 2,
+    explanation: "`df$score` is character text, `as.numeric()` converts it to numbers, and vectorized addition adds 1 to each value.",
+    source: "Lecture 4, data frames and type conversion" },
+  { id: "import-025", topic: "import", type: "single",
+    prompt: "What does this code extract?",
+    code: "df <- data.frame(a = 1:3, b = c(\"x\", \"y\", \"z\"))\ndf[2, \"b\"]",
+    options: ["\"y\"", "2", "\"x\"", "The whole column `b`"],
+    answer: 0,
+    explanation: "Data frame indexing uses `[row, column]`; row 2 of column `b` is `\"y\"`.",
+    source: "Lecture 4, data frame subsetting" },
 
   // ---------------- NON-RECTANGULAR DATA ----------------
   { id: "nonrect-001", topic: "nonrect", type: "single",
@@ -792,6 +840,13 @@ const QUESTIONS = [
     answer: 0,
     explanation: "html_elements() (formerly html_nodes) selects nodes. Not confirmed in the extractable course text -- verify against the Workshop 3 slides/solution before relying on this one.",
     source: "Workshop 3, rvest (unconfirmed -- check slides)" },
+  { id: "nonrect-020", topic: "nonrect", type: "single",
+    prompt: "What does this code return?",
+    code: "x <- jsonlite::fromJSON('{\"scores\":[10,20],\"name\":\"Ada\"}')\nx$scores[2]",
+    options: ["A JSON string, not an R value", "10", "\"Ada\"", "20"],
+    answer: 3,
+    explanation: "`fromJSON()` converts the JSON object to R values. The second element of `scores` is 20.",
+    source: "Lecture 5, JSON" },
 
   // ---------------- APIs ----------------
   { id: "apis-001", topic: "apis", type: "single",
@@ -820,7 +875,7 @@ const QUESTIONS = [
       "Guaranteed absence of rate limits"
     ],
     answer: [0, 1, 2],
-    explanation: "APIs automate and target retrieval, but they are commonly rate limited, so the last option is false.",
+    explanation: "APIs automate and target retrieval, but APIs are commonly rate limited, so guaranteed absence of rate limits is false.",
     source: "Guest lecture, APIs" },
   { id: "apis-005", topic: "apis", type: "single",
     prompt: "What does a rate limit on an API mean?",
@@ -895,6 +950,30 @@ const QUESTIONS = [
     answer: true,
     explanation: "request() then req_perform() then resp_status() and resp_body_json() is the standard flow.",
     source: "Guest lecture, httr2" },
+  { id: "apis-017", topic: "apis", type: "single",
+    prompt: "What is the best interpretation of this httr2 code?",
+    code: "req <- httr2::request(\"https://api.example.com/data\") |>\n  httr2::req_url_query(country = \"CH\")",
+    options: [
+      "It sends the request and parses the JSON response",
+      "It checks whether the response status is 200",
+      "It stores an API key in the URL",
+      "It builds a request with query parameter `country=CH`, but does not send it yet"
+    ],
+    answer: 3,
+    explanation: "`request()` and `req_url_query()` build the request object. The request is not sent until `req_perform()` is called.",
+    source: "Guest lecture, httr2" },
+  { id: "apis-018", topic: "apis", type: "single",
+    prompt: "Suppose this code returns `404`. What does that mean?",
+    code: "resp <- httr2::req_perform(req)\nhttr2::resp_status(resp)",
+    options: [
+      "The client is being rate limited",
+      "The server returned JSON successfully",
+      "The request succeeded",
+      "The requested resource was not found"
+    ],
+    answer: 3,
+    explanation: "HTTP 404 means the requested resource was not found. A successful request would normally be 200.",
+    source: "Guest lecture, HTTP status" },
 
   // ---------------- DATA PREPARATION ----------------
   { id: "prep-001", topic: "prep", type: "single",
@@ -1041,8 +1120,32 @@ const QUESTIONS = [
     answer: 0,
     explanation: "separate() splits a column; unite() is the reverse.",
     source: "Lecture 7/8, tidyr" },
+  { id: "prep-024", topic: "prep", type: "single",
+    prompt: "What does this pipeline produce conceptually?",
+    code: "df <- data.frame(g = c(\"A\", \"A\", \"B\"), x = c(1, 3, 10))\ndf |>\n  dplyr::group_by(g) |>\n  dplyr::summarise(avg = mean(x))",
+    options: [
+      "Three rows: one average per original row",
+      "One row: avg is 14",
+      "Two rows: A has avg 2, B has avg 10",
+      "An error because `mean()` cannot be used in `summarise()`"
+    ],
+    answer: 2,
+    explanation: "`group_by(g)` creates groups A and B. `summarise()` returns one row per group: A = mean(1, 3) = 2 and B = 10.",
+    source: "Lecture 8, group_by() and summarise()" },
+  { id: "prep-025", topic: "prep", type: "single",
+    prompt: "What does this join return conceptually?",
+    code: "dplyr::left_join(\n  data.frame(id = c(1, 2), x = c(\"a\", \"b\")),\n  data.frame(id = c(2, 3), y = c(\"Y2\", \"Y3\")),\n  by = \"id\"\n)",
+    options: [
+      "Two rows: id 1 has `y = NA`; id 2 has `y = \"Y2\"`",
+      "Three rows: ids 1, 2, and 3 are all kept",
+      "One row: only id 2 is kept",
+      "Zero rows because the tables are different sizes"
+    ],
+    answer: 0,
+    explanation: "A left join keeps all rows from the left table. id 1 has no match, so right-hand columns are `NA`; id 2 matches `Y2`.",
+    source: "Lecture 8, joins" },
 
-  // ---------------- EDA & VISUALISATION ----------------
+  // ---------------- EDA & VISUALISATION (general) ----------------
   { id: "viz-001", topic: "viz", type: "single",
     prompt: "In ggplot2, a colour that should vary with a variable must be placed:",
     options: ["Inside aes()", "Outside aes()", "In theme()", "In facet_wrap()"],
@@ -1175,258 +1278,231 @@ const QUESTIONS = [
     answer: 0,
     explanation: "complete.cases() is TRUE for rows without any NA.",
     source: "Lecture 9, missing values" },
+  { id: "viz-022", topic: "viz", type: "single",
+    prompt: "In this plot, what varies according to `sex`?",
+    code: "ggplot2::ggplot(df, ggplot2::aes(x = height, y = weight, colour = sex)) +\n  ggplot2::geom_point()",
+    options: ["The y-axis variable", "Point colour", "The x-axis variable", "The facet layout"],
+    answer: 1,
+    explanation: "`colour = sex` is inside `aes()`, so point colour is mapped to the variable `sex`.",
+    source: "Lecture 9, ggplot2 aesthetics" },
+  { id: "viz-023", topic: "viz", type: "single",
+    prompt: "What do the bar heights represent in this plot?",
+    code: "ggplot2::ggplot(df, ggplot2::aes(x = group, y = value)) +\n  ggplot2::geom_bar(stat = \"identity\")",
+    options: ["A fitted linear model", "Counts of rows in each `group`", "Missing values only", "The supplied `value` column"],
+    answer: 3,
+    explanation: "`geom_bar(stat = \"identity\")` uses the supplied y-values instead of counting rows.",
+    source: "Lecture 10, geoms" },
+
+  // ---------------- EDA CONCEPTS & AESTHETICS (Lecture 9) ----------------
+  { id: "eda-001", topic: "eda", type: "single",
+    prompt: "In this course, exploratory data analysis (EDA) is best described as:",
+    options: [
+      "An iterative process of asking questions about data, then using summaries and plots to answer and refine them",
+      "A fixed checklist of statistical tests you run once before modelling",
+      "The step where you write the final report for stakeholders",
+      "A synonym for hypothesis testing with p-values"
+    ],
+    answer: 0,
+    explanation: "EDA is iterative: generate questions, explore with summaries/visuals, refine the questions. It is not a one-off checklist or formal inference.",
+    source: "Lecture 9, EDA" },
+  { id: "eda-002", topic: "eda", type: "single",
+    prompt: "Variation and covariation refer to:",
+    options: [
+      "Variation = how values of one variable change; covariation = how two variables change together",
+      "Variation = between-group differences; covariation = within-group differences",
+      "Variation = sample size; covariation = number of variables",
+      "They are two names for the same thing"
+    ],
+    answer: 0,
+    explanation: "Variation is the spread within a single variable (typical vs surprising values). Covariation is the tendency of two or more variables to vary together.",
+    source: "Lecture 9, EDA variation (corrected from Lecture 10)" },
+  { id: "eda-003", topic: "eda", type: "single",
+    prompt: "What is the minimum you must supply for a ggplot2 plot to actually draw anything?",
+    options: [
+      "Data, at least one aesthetic mapping, and at least one geom layer",
+      "Only the data frame",
+      "Data and a theme",
+      "Data, a stat, and a coordinate system, in that order"
+    ],
+    answer: 0,
+    explanation: "A plot needs data + aesthetic mapping (aes) + a geometric layer (geom_*). Stats, scales, coords, facets and themes have sensible defaults.",
+    source: "Lecture 9, grammar of graphics (corrected from Lecture 10)" },
+  { id: "eda-004", topic: "eda", type: "multi",
+    prompt: "Which of the following are aesthetic mappings you can set inside `aes()`? Select all that apply.",
+    options: ["x / y position", "colour", "shape", "the output file format"],
+    answer: [0, 1, 2],
+    explanation: "x, y, colour, fill, shape, size and alpha are aesthetics mapped from data. Output file format is a property of ggsave(), not an aesthetic.",
+    source: "Lecture 9, aesthetics" },
+  { id: "eda-005", topic: "eda", type: "single",
+    prompt: "Consider the two calls below. What is the visible difference?",
+    code: "# A\nggplot(mtcars, aes(x = wt, y = mpg)) +\n  geom_point(aes(colour = \"blue\"))\n\n# B\nggplot(mtcars, aes(x = wt, y = mpg)) +\n  geom_point(colour = \"blue\")",
+    options: [
+      "A does NOT make points blue: it maps a constant string, so ggplot draws its default colour and adds a legend. B actually makes the points blue.",
+      "They render identically",
+      "B fails with an error because colour must go inside aes()",
+      "A makes the points blue and B makes them red"
+    ],
+    answer: 0,
+    explanation: "Putting colour = \"blue\" inside aes() maps a one-level categorical variable, so ggplot assigns its first default colour and shows a legend labelled \"blue\". To set a constant colour, place it OUTSIDE aes().",
+    source: "Lecture 9, aesthetics" },
+  { id: "eda-006", topic: "eda", type: "single", flagged: true,
+    prompt: "A boxplot (geom_boxplot) is especially useful for:",
+    options: [
+      "Comparing the spread and median of a continuous variable across categories, and spotting outliers",
+      "Showing the exact value of every observation",
+      "Displaying a time trend of one series",
+      "Encoding three continuous variables at once"
+    ],
+    answer: 0,
+    explanation: "Boxplots summarise median, quartiles and outliers, which makes them good for comparing distributions across groups. Rides on geom_boxplot, not confirmed in the extractable course text -- same caveat as viz-010.",
+    source: "Lecture 9, geoms (unconfirmed -- check slides)" },
+  { id: "eda-007", topic: "eda", type: "single", flagged: true,
+    prompt: "What is the difference between facet_wrap and facet_grid?",
+    options: [
+      "facet_wrap(~a) lays panels of one variable into a wrapped grid; facet_grid(a ~ b) makes a full row-by-column matrix of two variables",
+      "facet_wrap is for continuous variables, facet_grid for categorical",
+      "They are identical aliases",
+      "facet_grid can only take one variable"
+    ],
+    answer: 0,
+    explanation: "facet_wrap wraps panels of (usually) one variable to fit; facet_grid crosses two variables into a rows-by-columns layout. facet_wrap is confirmed in the course materials; facet_grid is not -- verify before relying on this one.",
+    source: "Lecture 9, facets (facet_grid unconfirmed -- check slides)" },
+  { id: "eda-008", topic: "eda", type: "multi",
+    prompt: "Using `labs()`, which plot elements can you set the text for? Select all that apply.",
+    options: ["title", "x axis label", "legend title (via the mapped aesthetic, e.g. colour)", "the R version used"],
+    answer: [0, 1, 2],
+    explanation: "labs() sets title, subtitle, caption, axis labels and legend titles (by naming the aesthetic, e.g. colour = \"...\"). It has nothing to do with the R version.",
+    source: "Lecture 9, labels" },
+  { id: "eda-009", topic: "eda", type: "tf",
+    prompt: "If your data contain NA in a mapped variable, ggplot2 silently keeps them and plots NA as its own value.",
+    answer: false,
+    explanation: "ggplot removes rows with missing values in the mapped aesthetics and prints a warning about the removed rows. It does not plot NA as a value.",
+    source: "Lecture 9, missing values" },
+
+  // ---------------- VISUALIZATION DESIGN & POLISH (Lecture 10) ----------------
+  { id: "vizdesign-001", topic: "vizdesign", type: "single",
+    prompt: "In the layered call below, what determines drawing order on the canvas?",
+    code: "ggplot(df, aes(x, y)) +\n  geom_point() +\n  geom_smooth(method = \"lm\")",
+    options: [
+      "Layers are drawn in the order added, so the smooth line is drawn on top of the points",
+      "ggplot draws smooths first always",
+      "Order is random each run",
+      "Only the last geom is drawn"
+    ],
+    answer: 0,
+    explanation: "Layers stack in the order you add them. Here points are drawn first, then the regression line on top.",
+    source: "Lecture 10, layering" },
+  { id: "vizdesign-002", topic: "vizdesign", type: "single",
+    prompt: "How do you move the legend to the bottom of a ggplot?",
+    options: [
+      "theme(legend.position = \"bottom\")",
+      "labs(legend = \"bottom\")",
+      "scale_legend(\"bottom\")",
+      "coord_flip()"
+    ],
+    answer: 0,
+    explanation: "Legend placement is a theme setting: theme(legend.position = \"bottom\" | \"top\" | \"right\" | \"none\").",
+    source: "Lecture 10, themes" },
+  { id: "vizdesign-003", topic: "vizdesign", type: "single",
+    prompt: "Which call saves a ggplot to a file on disk?",
+    code: "p <- ggplot(df, aes(x, y)) + geom_point()\n____",
+    options: [
+      "ggsave(\"plot.png\", plot = p, width = 6, height = 4)",
+      "save.plot(p, \"plot.png\")",
+      "export(p, \"plot.png\")",
+      "write_plot(p, \"plot.png\")"
+    ],
+    answer: 0,
+    explanation: "ggsave() writes a plot to a file. Without plot = it saves the last displayed plot; you can set width, height, dpi and units.",
+    source: "Lecture 10, saving plots" },
+  { id: "vizdesign-004", topic: "vizdesign", type: "single",
+    prompt: "Tufte's data-ink ratio is defined as:",
+    options: [
+      "ink used for the data divided by total ink used to print the graphic",
+      "number of colours divided by number of variables",
+      "chart width divided by chart height",
+      "data points divided by pixels"
+    ],
+    answer: 0,
+    explanation: "Data-ink ratio = data-ink / total ink. The advice is to maximise it: cut redundant, non-data ink (chartjunk).",
+    source: "Lecture 10, Tufte" },
+  { id: "vizdesign-005", topic: "vizdesign", type: "single",
+    prompt: "Why are 3-D bar charts and pie charts discouraged in this course?",
+    options: [
+      "They make it hard to compare values accurately; humans judge angles and volumes poorly",
+      "They are slower to render in R",
+      "ggplot2 cannot draw them at all",
+      "They always distort the underlying data by a fixed factor"
+    ],
+    answer: 0,
+    explanation: "The critique is perceptual: angles (pies) and 3-D volumes are read inaccurately, so position-based charts (bars, lines) communicate better.",
+    source: "Lecture 10, design principles" },
+  { id: "vizdesign-006", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "A recommended reason to use a viridis colour scale is:",
+    options: [
+      "It is perceptually uniform and remains readable for colour-blind viewers and in greyscale",
+      "It uses the fewest possible colours",
+      "It is the only palette ggplot2 ships with",
+      "It automatically sorts your categories"
+    ],
+    answer: 0,
+    explanation: "viridis scales are designed to be perceptually uniform and colour-blind friendly, and they still read in greyscale. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, colour (unconfirmed -- check slides)" },
+  { id: "vizdesign-007", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "In a stacked bar chart, which position adjustment turns each bar into proportions that fill to 100%?",
+    code: "ggplot(df, aes(x = group, fill = category)) +\n  geom_bar(position = ____)",
+    options: ["\"fill\"", "\"dodge\"", "\"identity\"", "\"jitter\""],
+    answer: 0,
+    explanation: "position = \"fill\" standardises each stack to full height, showing proportions. \"dodge\" places bars side by side; \"stack\" (default) stacks raw counts. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, position adjustments (unconfirmed -- check slides)" },
+  { id: "vizdesign-008", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "Which position adjustment places grouped bars side by side instead of stacking them?",
+    options: ["position = \"dodge\"", "position = \"stack\"", "position = \"fill\"", "position = \"identity\""],
+    answer: 0,
+    explanation: "\"dodge\" separates bars of different fill groups horizontally so they sit next to each other. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, position adjustments (unconfirmed -- check slides)" },
+  { id: "vizdesign-009", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "You have heavy overplotting in a scatterplot (many points on top of each other). A taught fix is:",
+    options: [
+      "Add jitter, e.g. geom_jitter() or position = \"jitter\", and/or lower alpha",
+      "Switch to a pie chart",
+      "Remove the axes",
+      "Set stat = \"count\""
+    ],
+    answer: 0,
+    explanation: "Jittering nudges points apart and lowering alpha makes overlaps visible. Both reduce overplotting. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, position adjustments (unconfirmed -- check slides)" },
+  { id: "vizdesign-010", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "Your x variable spans several orders of magnitude and the plot is unreadable. A scale-based fix is:",
+    options: [
+      "scale_x_log10() to put the x axis on a log scale",
+      "coord_flip() to swap axes",
+      "theme_minimal() to clean the background",
+      "position = \"dodge\""
+    ],
+    answer: 0,
+    explanation: "scale_x_log10() log-transforms the axis so widely spread values become legible. Scales control how data values map to visual positions. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, scales (unconfirmed -- check slides)" },
+  { id: "vizdesign-011", topic: "vizdesign", type: "single", flagged: true,
+    prompt: "What does adding `+ coord_flip()` do?",
+    code: "ggplot(df, aes(x = category, y = value)) +\n  geom_col() +\n  coord_flip()",
+    options: [
+      "Swaps the x and y axes, so the categorical axis becomes horizontal (handy for long labels)",
+      "Sorts the bars in descending order",
+      "Converts the chart to polar coordinates",
+      "Removes the coordinate system entirely"
+    ],
+    answer: 0,
+    explanation: "coord_flip() flips the axes, commonly used to make bar labels readable when there are many long category names. Not confirmed in the extractable course text -- verify before relying on this one.",
+    source: "Lecture 10, coordinate systems (unconfirmed -- check slides)" },
 ];
 
 if (typeof module !== "undefined") module.exports = { TOPICS, QUESTIONS };
-/* PATCH START: option shuffle + flagged-note/data fix + code-interpretation additions */
+
+/* PATCH START: deterministic option shuffle (preserved from the prior revision -- not written by me in this conversation, verify separately) */
 (() => {
   if (typeof QUESTIONS === "undefined" || !Array.isArray(QUESTIONS)) {
     throw new Error("QUESTIONS array not found. Paste this block after the QUESTIONS declaration.");
-  }
-
-  // Correct flagged-item state.
-  // If your header comment says `nonrect-021`, change that text to `nonrect-019`.
-  for (const q of QUESTIONS) {
-    if (q.id === "nonrect-019" || q.id === "viz-010") q.flagged = true;
-
-    if (q.id === "apis-004") {
-      q.explanation =
-        "APIs automate and target retrieval, but APIs are commonly rate limited, so guaranteed absence of rate limits is false.";
-    }
-  }
-
-  const NEW_CODE_INTERPRETATION_QUESTIONS = [
-    {
-      id: "tools-031",
-      topic: "tools",
-      type: "single",
-      prompt: "Your working directory is `/home/me/project`. Which file does this command try to run?",
-      code: "source(\"code/clean.R\")",
-      options: [
-        "`/home/me/code/clean.R`",
-        "A package called `clean.R` on CRAN",
-        "`/home/me/project/code/clean.R`",
-        "`/code/clean.R`"
-      ],
-      answer: 2,
-      explanation:
-        "A relative path is resolved from the current working directory, so `code/clean.R` means `/home/me/project/code/clean.R`.",
-      source: "Lecture 1, working directory and source()"
-    },
-    {
-      id: "tools-032",
-      topic: "tools",
-      type: "single",
-      prompt: "What is printed by this code?",
-      code: "x <- 1\nX <- 2\nprint(x)",
-      options: ["3", "Error because `x` and `X` conflict", "2", "1"],
-      answer: 3,
-      explanation:
-        "R names are case sensitive. `x` and `X` are different objects, so `print(x)` prints 1.",
-      source: "Lecture 1, naming and output"
-    },
-    {
-      id: "prog-030",
-      topic: "prog",
-      type: "single",
-      prompt: "What does this code return?",
-      code: "x <- c(1, NA, 3)\nsum(is.na(x))",
-      options: ["1", "NA", "3", "0"],
-      answer: 0,
-      explanation:
-        "`is.na(x)` is `FALSE TRUE FALSE`; summing that logical vector counts one missing value.",
-      source: "Lecture 2, missing values and logical vectors"
-    },
-    {
-      id: "prog-031",
-      topic: "prog",
-      type: "single",
-      prompt: "What does this code return?",
-      code: "x <- c(2, 4, 6)\ny <- x > 3\nx[y]",
-      options: ["2 4 6", "TRUE TRUE", "2", "4 6"],
-      answer: 3,
-      explanation:
-        "`x > 3` gives `FALSE TRUE TRUE`, so logical indexing keeps the second and third elements: 4 and 6.",
-      source: "Lecture 2, comparison and indexing"
-    },
-    {
-      id: "storage-020",
-      topic: "storage",
-      type: "single",
-      prompt: "What does this comparison return in R?",
-      code: "0.1 + 0.2 == 0.3",
-      options: ["NA", "TRUE", "Error", "FALSE"],
-      answer: 3,
-      explanation:
-        "Binary floating-point storage cannot represent all decimal fractions exactly, so the computed left side is not exactly equal to 0.3.",
-      source: "Lecture 3, floating point"
-    },
-    {
-      id: "storage-021",
-      topic: "storage",
-      type: "single",
-      prompt: "What does this code return?",
-      code: "x <- c(NA, NaN, Inf)\nis.na(x)",
-      options: ["TRUE TRUE FALSE", "FALSE TRUE TRUE", "TRUE FALSE FALSE", "NA NaN Inf"],
-      answer: 0,
-      explanation:
-        "`NA` and `NaN` are both detected by `is.na()`, while `Inf` is a non-missing infinite value.",
-      source: "Lecture 3, special values"
-    },
-    {
-      id: "import-024",
-      topic: "import",
-      type: "single",
-      prompt: "What does this code return?",
-      code: "df <- data.frame(score = c(\"10\", \"20\"))\nas.numeric(df$score) + 1",
-      options: ["\"10\" \"20\" 1", "10 20 1", "11 21", "NA NA"],
-      answer: 2,
-      explanation:
-        "`df$score` is character text, `as.numeric()` converts it to numbers, and vectorized addition adds 1 to each value.",
-      source: "Lecture 4, data frames and type conversion"
-    },
-    {
-      id: "import-025",
-      topic: "import",
-      type: "single",
-      prompt: "What does this code extract?",
-      code: "df <- data.frame(a = 1:3, b = c(\"x\", \"y\", \"z\"))\ndf[2, \"b\"]",
-      options: ["\"y\"", "2", "\"x\"", "The whole column `b`"],
-      answer: 0,
-      explanation:
-        "Data frame indexing uses `[row, column]`; row 2 of column `b` is `\"y\"`.",
-      source: "Lecture 4, data frame subsetting"
-    },
-    {
-      id: "nonrect-020",
-      topic: "nonrect",
-      type: "single",
-      prompt: "What does this code return?",
-      code: "x <- jsonlite::fromJSON('{\"scores\":[10,20],\"name\":\"Ada\"}')\nx$scores[2]",
-      options: ["A JSON string, not an R value", "10", "\"Ada\"", "20"],
-      answer: 3,
-      explanation:
-        "`fromJSON()` converts the JSON object to R values. The second element of `scores` is 20.",
-      source: "Lecture 5, JSON"
-    },
-    {
-      id: "nonrect-021",
-      topic: "nonrect",
-      type: "single",
-      prompt: "What does this code return conceptually?",
-      code:
-        "doc <- xml2::read_xml(\"<students><student><name>Ana</name></student><student><name>Bo</name></student></students>\")\nxml2::xml_text(xml2::xml_find_all(doc, \".//name\"))",
-      options: ["\"Ana\" \"Bo\"", "The raw XML document unchanged", "\"students\"", "Only \"Ana\""],
-      answer: 0,
-      explanation:
-        "The XPath `.//name` selects all `<name>` nodes at any depth, and `xml_text()` extracts their text.",
-      source: "Lecture 5, XML / XPath"
-    },
-    {
-      id: "apis-017",
-      topic: "apis",
-      type: "single",
-      prompt: "What is the best interpretation of this httr2 code?",
-      code:
-        "req <- httr2::request(\"https://api.example.com/data\") |>\n  httr2::req_url_query(country = \"CH\")",
-      options: [
-        "It sends the request and parses the JSON response",
-        "It checks whether the response status is 200",
-        "It stores an API key in the URL",
-        "It builds a request with query parameter `country=CH`, but does not send it yet"
-      ],
-      answer: 3,
-      explanation:
-        "`request()` and `req_url_query()` build the request object. The request is not sent until `req_perform()` is called.",
-      source: "Guest lecture, httr2"
-    },
-    {
-      id: "apis-018",
-      topic: "apis",
-      type: "single",
-      prompt: "Suppose this code returns `404`. What does that mean?",
-      code: "resp <- httr2::req_perform(req)\nhttr2::resp_status(resp)",
-      options: [
-        "The client is being rate limited",
-        "The server returned JSON successfully",
-        "The request succeeded",
-        "The requested resource was not found"
-      ],
-      answer: 3,
-      explanation:
-        "HTTP 404 means the requested resource was not found. A successful request would normally be 200.",
-      source: "Guest lecture, HTTP status"
-    },
-    {
-      id: "prep-024",
-      topic: "prep",
-      type: "single",
-      prompt: "What does this pipeline produce conceptually?",
-      code:
-        "df <- data.frame(g = c(\"A\", \"A\", \"B\"), x = c(1, 3, 10))\ndf |>\n  dplyr::group_by(g) |>\n  dplyr::summarise(avg = mean(x))",
-      options: [
-        "Three rows: one average per original row",
-        "One row: avg is 14",
-        "Two rows: A has avg 2, B has avg 10",
-        "An error because `mean()` cannot be used in `summarise()`"
-      ],
-      answer: 2,
-      explanation:
-        "`group_by(g)` creates groups A and B. `summarise()` returns one row per group: A = mean(1, 3) = 2 and B = 10.",
-      source: "Lecture 8, group_by() and summarise()"
-    },
-    {
-      id: "prep-025",
-      topic: "prep",
-      type: "single",
-      prompt: "What does this join return conceptually?",
-      code:
-        "dplyr::left_join(\n  data.frame(id = c(1, 2), x = c(\"a\", \"b\")),\n  data.frame(id = c(2, 3), y = c(\"Y2\", \"Y3\")),\n  by = \"id\"\n)",
-      options: [
-        "Two rows: id 1 has `y = NA`; id 2 has `y = \"Y2\"`",
-        "Three rows: ids 1, 2, and 3 are all kept",
-        "One row: only id 2 is kept",
-        "Zero rows because the tables are different sizes"
-      ],
-      answer: 0,
-      explanation:
-        "A left join keeps all rows from the left table. id 1 has no match, so right-hand columns are `NA`; id 2 matches `Y2`.",
-      source: "Lecture 8, joins"
-    },
-    {
-      id: "viz-022",
-      topic: "viz",
-      type: "single",
-      prompt: "In this plot, what varies according to `sex`?",
-      code:
-        "ggplot2::ggplot(df, ggplot2::aes(x = height, y = weight, colour = sex)) +\n  ggplot2::geom_point()",
-      options: ["The y-axis variable", "Point colour", "The x-axis variable", "The facet layout"],
-      answer: 1,
-      explanation:
-        "`colour = sex` is inside `aes()`, so point colour is mapped to the variable `sex`.",
-      source: "Lecture 9, ggplot2 aesthetics"
-    },
-    {
-      id: "viz-023",
-      topic: "viz",
-      type: "single",
-      prompt: "What do the bar heights represent in this plot?",
-      code:
-        "ggplot2::ggplot(df, ggplot2::aes(x = group, y = value)) +\n  ggplot2::geom_bar(stat = \"identity\")",
-      options: ["A fitted linear model", "Counts of rows in each `group`", "Missing values only", "The supplied `value` column"],
-      answer: 3,
-      explanation:
-        "`geom_bar(stat = \"identity\")` uses the supplied y-values instead of counting rows.",
-      source: "Lecture 10, geoms"
-    }
-  ];
-
-  const existingIds = new Set(QUESTIONS.map((q) => q.id));
-  for (const q of NEW_CODE_INTERPRETATION_QUESTIONS) {
-    if (!existingIds.has(q.id)) {
-      QUESTIONS.push(q);
-      existingIds.add(q.id);
-    }
   }
 
   function hash32(text) {
