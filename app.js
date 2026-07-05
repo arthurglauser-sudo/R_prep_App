@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var EXAM_DATE = new Date(2026, 7, 7); // 7 July 2026 (month is 0-based)
+  var EXAM_DATE = new Date(2026, 6, 7); // 7 July 2026 (month is 0-based)
   var STORE_KEY = "hsg-r-prep-progress-v1";
 
   // ---------- state ----------
