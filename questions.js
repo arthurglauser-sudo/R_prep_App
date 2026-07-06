@@ -1673,8 +1673,9 @@ const QUESTIONS = [
     explanation: "You do need library(ggplot2) loaded first. The other three are false: no renamed copy is needed, scatterplots are possible in R, and base plot() can also produce one.",
     source: "Mock Exam, Q27" },
  
-  { id: "mock-028", topic: "mockexam", type: "multi", flagged: true,
-    prompt: "You look at the structure of your data frame 'df' and R reports: 'data.frame': 3 obs. of 2 variables: $ V1: int 1 2 9, $ V3: chr \"a\" \"b\" \"3\". Select the statements that are true.",
+ { id: "mock-028", topic: "mockexam", type: "multi", flagged: true,
+    prompt: "You look at the structure of your data frame 'df' and R reports the output below. Select the statements that are true.",
+    code: "'data.frame':\t3 obs. of  2 variables:\n $ V1: int  1 2 9\n $ V3: chr  \"a\" \"b\" \"3\"",
     options: [
       "df is badly formatted because it contains variables of different classes",
       "sum(df$V3, na.rm = TRUE) will return 3",
@@ -1682,11 +1683,12 @@ const QUESTIONS = [
       "mean(df$V1) will produce an error because V1 is not numeric"
     ],
     answer: [2],
-    explanation: "nrow(df) is 3 (matches the reported 3 obs). Having mixed column classes is normal, not \"badly formatted\". sum() on a character column errors rather than returning 3. V1 is int (numeric), so mean(df$V1) works fine, no error. The full option wording was not fully legible across screenshots; verify directly in Canvas.",
-    source: "Mock Exam, Q28 (partially unconfirmed -- check Canvas directly)" },
- 
+    explanation: "nrow(df) is 3 (matches the reported 3 obs). Mixed column classes is normal, not \"badly formatted\". sum() on a character column errors rather than returning 3. V1 is int (numeric), so mean(df$V1) works fine.",
+    source: "Mock Exam, Q28" },
+
   { id: "mock-029", topic: "mockexam", type: "multi",
-    prompt: "Consider: my_function <- function(x, y = 5) { if (x > y) { warning(\"x is greater than y\") }; d <- floor(y / x); result <- c(d, y - d*x); return(result) }. floor() rounds down to the nearest integer. Select statements that are true.",
+    prompt: "Consider the following function. floor() rounds a number down to the nearest integer. Select the statements that are true.",
+    code: "my_function <- function(x, y = 5) {\n  if (x > y) {\n    warning(\"x is greater than y\")\n  }\n  d <- floor(y / x)\n  result = c(d, y - d*x)\n  return(result)\n}",
     options: [
       "This function does not return a result if x > y",
       "The function always returns a vector c(0, y) if x > y",
@@ -1694,7 +1696,7 @@ const QUESTIONS = [
       "my_function(4, 9) returns the vector c(2, 1)"
     ],
     answer: [2, 3],
-    explanation: "A warning does not stop execution, so the function still returns a result even when x > y, and the \"always c(0,y)\" claim breaks for negative y (e.g. x=3,y=-1 gives c(-1,2), not c(0,-1)). my_function(5): x=y=5, no warning, d=floor(1)=1, result=c(1,0), no error. my_function(4,9): d=floor(9/4)=2, result=c(2, 9-8)=c(2,1).",
+    explanation: "A warning does not stop execution, so the function still returns a result even when x > y, and the \"always c(0,y)\" claim breaks for negative y. my_function(5): x=y=5, no warning, d=floor(1)=1, result=c(1,0), no error. my_function(4,9): d=floor(9/4)=2, result=c(2, 9-8)=c(2,1).",
     source: "Mock Exam, Q29" },
  
   { id: "mock-030", topic: "mockexam", type: "multi",
