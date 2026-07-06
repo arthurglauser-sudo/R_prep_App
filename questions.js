@@ -1641,11 +1641,12 @@ const QUESTIONS = [
     explanation: "split() by Firm produces one element per distinct value; Firm has 3 distinct values (Migros, Coop, Denner), so the result is a list of 3 data frames.",
     source: "Mock Exam, Q23" },
  
-  { id: "mock-024", topic: "mockexam", type: "tf", flagged: true,
-    prompt: "Check the following code (exact statement not fully legible from source screenshots). Assume the code returns 2 3.",
+  { id: "mock-024", topic: "mockexam", type: "tf",
+    prompt: "The line of R code below returns 2 3.",
+    code: "dim(cbind(matrix(c(1,2,3,4), ncol = 2), c(1,2)))",
     answer: true,
-    explanation: "Marked true per the exam's own answer key. The exact code could not be reliably transcribed from any screenshot version provided; verify directly in Canvas before relying on this one.",
-    source: "Mock Exam, Q24 (unconfirmed -- check Canvas directly)" },
+    explanation: "matrix(c(1,2,3,4), ncol = 2) is a 2x2 matrix; cbind() attaches c(1,2) as a third column, producing a 2-row, 3-column matrix. dim() reports rows then columns, so it returns c(2, 3), printed as 2 3.",
+    source: "Mock Exam, Q24" },
  
   { id: "mock-025", topic: "mockexam", type: "tf",
     prompt: "The hexadecimal equivalent of the base 10 number 20 is '14'.",
