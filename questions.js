@@ -1712,7 +1712,8 @@ const QUESTIONS = [
     source: "Mock Exam, Q30" },
  
   { id: "mock-031", topic: "mockexam", type: "single",
-    prompt: "Assume: df <- data.frame(Year = c(2005, 2005, 2007), Month = c(1, 2, 3)); df$Year <- ifelse(df$Year == 2005, 2015, df$Year). This will produce a data frame with the same values as (mark one as correct):",
+    prompt: "After running the code below, the data frame will have the same values as (mark one as correct):",
+    code: "df <- data.frame(Year = c(2005, 2005, 2007),\n                 Month = c(1, 2, 3))\ndf$Year <- ifelse(df$Year == 2005, 2015, df$Year)",
     options: [
       "df <- data.frame(Year = c(2015, 2015, 2007), Month = c(2015, 2015, 2015))",
       "df <- data.frame(Year = c(2015, 2015, 2007), Month = c(1, 2, 3))",
@@ -1769,7 +1770,8 @@ const QUESTIONS = [
     source: "Mock Exam, Q36" },
  
   { id: "mock-037", topic: "mockexam", type: "single",
-    prompt: "Consider: x <- c(1, 2, 3, \"Four\", \"Five\"); class(x). What is the console output when we run it?",
+    prompt: "What is the console output when we run the code below?",
+    code: "x <- c(1, 2, 3, \"Four\", \"Five\")\nclass(x)",
     options: ["\"list\"", "\"character\"", "\"data.frame\"", "\"numeric\""],
     answer: 1,
     explanation: "c() coerces all elements to the most flexible common type present; mixing numbers with strings makes the whole vector character.",
@@ -1783,7 +1785,8 @@ const QUESTIONS = [
     source: "Mock Exam, Q38 (unconfirmed -- check Canvas directly)" },
  
   { id: "mock-039", topic: "mockexam", type: "single",
-    prompt: "What does executing `mydf$month[mydf$month == 'Feb'] <- 'Februar'` change in the data frame 'mydf'?",
+    prompt: "What does executing the code below change in the data frame 'mydf'?",
+    code: "mydf$month[mydf$month == \"Feb\"] <- \"Februar\"",
     options: [
       "Nothing changes",
       "All values in column month equal to 'Feb' are replaced with the value 'Februar'",
