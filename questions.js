@@ -1512,9 +1512,10 @@ const QUESTIONS = [
     source: "Mock Exam, Q2" },
  
   { id: "mock-003", topic: "mockexam", type: "tf",
-    prompt: "Assume you run lines of R code that build a data frame and then call `mode(df$Country)`. The code returns 'England' as an output.",
+    prompt: "Assume you run the lines of R code below. The code returns 'England' as an output.",
+    code: "df <- data.frame(Teams = c(\"Manchester United\", \"Manchester City\", \"Inter Milan\", \"Real Madrid\"),\n                 Country = c(\"England\", \"England\", \"Italy\", \"Spain\"))\nmedian(df$Country)",
     answer: false,
-    explanation: "mode() reports the storage mode of the vector (e.g. \"character\"), not one of its values, so it cannot return \"England\".",
+    explanation: "median() requires numeric data; called on a character column it throws an error rather than returning a value, so it cannot return \"England\". (This differs from mode(), which would return the storage mode \"character\".)",
     source: "Mock Exam, Q3" },
  
   { id: "mock-004", topic: "mockexam", type: "tf",
@@ -1572,15 +1573,17 @@ const QUESTIONS = [
     source: "Mock Exam, Q12" },
  
   { id: "mock-013", topic: "mockexam", type: "tf",
-    prompt: "Given a data frame with columns x, y, z, running `names(myvals)` will get \"x\" \"y\" \"z\" as an output.",
+    prompt: "If you run the code below, you will get \"a\" \"b\" \"d\" as an output.",
+    code: "mydata <- data.frame(a = c(1,2,3), b = c(4,5,6), d = c(10,11,12))\nnames(mydata)",
     answer: true,
-    explanation: "names() on a data frame returns its column names in order.",
+    explanation: "names() on a data frame returns its column names in order, i.e. \"a\" \"b\" \"d\".",
     source: "Mock Exam, Q13" },
  
   { id: "mock-014", topic: "mockexam", type: "tf",
-    prompt: "Given `myvector <- factor(c('Cat','Dog','Cat','Sparrow'))`, running `levels(myvector)` will get \"Cat\" \"Dog\" \"Cat\" \"Sparrow\" as an output.",
+    prompt: "If you run the code below, you will get \"carl\" \"siddha\" \"tom\" \"sandrine\" as an output.",
+    code: "mymates <- factor(c(\"carl\", \"siddha\", \"tom\", \"sandrine\"))\nnames(mymates)",
     answer: false,
-    explanation: "levels() returns the unique category labels only, sorted, so it would give \"Cat\" \"Dog\" \"Sparrow\" without the duplicate.",
+    explanation: "names() returns the names attribute, which is NULL for a factor (factors store their labels as levels, not names). levels() or as.character() would give the labels. So the output is NULL, not the four strings.",
     source: "Mock Exam, Q14" },
  
   { id: "mock-015", topic: "mockexam", type: "tf",
@@ -1632,9 +1635,10 @@ const QUESTIONS = [
     source: "Mock Exam, Q22" },
  
   { id: "mock-023", topic: "mockexam", type: "tf",
-    prompt: "Check the following code: a SuperMarket list is built from name and Profit vectors, then split by Firm. 'SuperMarket' is a list with 3 elements.",
+    prompt: "Check the code below. 'SuperMarket' is a list with 3 elements.",
+    code: "SuperMarket <- data.frame(\n  Firm = c(\"Migros\", \"Migros\", \"Coop\", \"Coop\", \"Denner\"),\n  Profit = c(200, 220, 190, 194, 120)\n)\nSuperMarket <- split(SuperMarket, SuperMarket$Firm)",
     answer: true,
-    explanation: "Splitting by a grouping variable with 3 distinct values produces a list of 3 elements, one per group.",
+    explanation: "split() by Firm produces one element per distinct value; Firm has 3 distinct values (Migros, Coop, Denner), so the result is a list of 3 data frames.",
     source: "Mock Exam, Q23" },
  
   { id: "mock-024", topic: "mockexam", type: "tf", flagged: true,
@@ -1725,7 +1729,8 @@ const QUESTIONS = [
     source: "Mock Exam, Q31" },
  
   { id: "mock-032", topic: "mockexam", type: "single",
-    prompt: "You have a json file 'company.json' with a company containing departments (Development: 120, Marketing: 45, Sales: 50) and a founded year. You import it with jsonlite::fromJSON. Which of the following is true?",
+    prompt: "You have the json file company.json shown below and import it with the code below. Which of the following is true?",
+    code: "{\n  \"company\": {\n    \"name\": \"Tech Solutions\",\n    \"departments\": [\n      {\"name\": \"Development\", \"employees\": 120},\n      {\"name\": \"Marketing\", \"employees\": 45},\n      {\"name\": \"Sales\", \"employees\": 50}\n    ],\n    \"founded\": 2001\n  }\n}\n\n# import in R\nlibrary(jsonlite)\njson_data <- fromJSON(\"company.json\")",
     options: [
       "mean(json_data$company$departments$employees) returns the average number of employees",
       "json_data$company returns a list with 1 element",
@@ -1733,7 +1738,7 @@ const QUESTIONS = [
       "json_data is stored as a json object in R"
     ],
     answer: 0,
-    explanation: "departments parses into a data frame with an employees column of c(120, 45, 50); mean() of that vector correctly returns the average. json_data$company has 3 elements (name, departments, founded), not 1; json_data[[1]][[2]] resolves to the departments table, not a single string; fromJSON() returns a plain R list/data frame, not a special json-class object.",
+    explanation: "departments parses into a data frame with an employees column c(120, 45, 50); mean() of that returns the average. json_data$company has 3 elements (name, departments, founded), json_data[[1]][[2]] is the departments table (not one string), and fromJSON() returns a plain R list/data frame, not a json-class object.",
     source: "Mock Exam, Q32" },
  
   { id: "mock-033", topic: "mockexam", type: "single",
@@ -1744,10 +1749,11 @@ const QUESTIONS = [
     source: "Mock Exam, Q33" },
  
   { id: "mock-034", topic: "mockexam", type: "single",
-    prompt: "string <- \"dante Alighieri\"; the code chain ends by computing trimws(tolower(string)). What does the execution return?",
+    prompt: "What does the execution of the R code below return?",
+    code: "string <- \"dAnte Alighieri\"\ntoupper(string)\ntolower(string)\ntrimws(tolower(string))",
     options: ["DANTEALIGHIERI", "dantealighieri", "dante alighieri", "DANTE ALIGHIERI"],
     answer: 2,
-    explanation: "tolower() lowercases the whole string to \"dante alighieri\"; trimws() only trims leading/trailing whitespace, so the internal space stays, giving \"dante alighieri\".",
+    explanation: "The returned value is the last expression, trimws(tolower(string)). tolower() gives \"dante alighieri\"; trimws() only strips leading/trailing whitespace, so the internal space stays.",
     source: "Mock Exam, Q34" },
  
   { id: "mock-035", topic: "mockexam", type: "single",
@@ -1777,12 +1783,18 @@ const QUESTIONS = [
     explanation: "c() coerces all elements to the most flexible common type present; mixing numbers with strings makes the whole vector character.",
     source: "Mock Exam, Q37" },
  
-  { id: "mock-038", topic: "mockexam", type: "single", flagged: true,
-    prompt: "A data frame is built and then modified (grades halved, a constant city column and an ID column added). Which of the following statements about the resulting dimensions is true?",
-    options: ["dim(df) == c(6, 3)", "dim(df) == c(6, 4)", "dim(df) == c(4, 4)", "dim(df) == c(4, 3)"],
+  { id: "mock-038", topic: "mockexam", type: "single",
+    prompt: "Which of the following statements is true when we run the code below?",
+    code: "df <- data.frame(\n  name = c(\"Adam\", \"Eve\"),\n  age = c(12, 12, 13, 13, 14, 14),\n  grades = c(12, 12, 10, 11, 9, 11)\n)\ndf$grades <- df$grades/2\ndf$city <- \"St. Gallen\"\ndf$ID <- c(1,2,1,2,1,2)",
+    options: [
+      "dim(df) == c(6, 4)",
+      "dim(df) == c(6, 5)",
+      "dim(df) == c(4, 6)",
+      "dim(df) == c(5, 6)"
+    ],
     answer: 1,
-    explanation: "Best derivation from partial screenshots: adding city and ID as new columns to a 6-row frame gives 6 rows and 4 columns. The original code's exact vector lengths were never fully legible across any screenshot version; verify directly in Canvas before trusting this one.",
-    source: "Mock Exam, Q38 (unconfirmed -- check Canvas directly)" },
+    explanation: "dim() reports rows then columns. name (length 2) recycles to 6 rows to match age and grades, giving 6 rows x 3 cols; df$grades/2 modifies an existing column, df$city adds a 4th, df$ID adds a 5th. Result: c(6, 5). The c(4,6)/c(5,6) options are the correct counts with rows and columns swapped.",
+    source: "Mock Exam, Q38" },
  
   { id: "mock-039", topic: "mockexam", type: "single",
     prompt: "What does executing the code below change in the data frame 'mydf'?",
